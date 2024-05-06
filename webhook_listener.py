@@ -35,7 +35,8 @@ def load_config():
         default_config = {
             'get_option': 'episode',
             'action_option': 'search',
-            'already_watched': 'keep',
+            'keep_watched': 1,
+            'monitor_watched': false,
             'always_keep': []
             
         }
@@ -77,16 +78,18 @@ def update_settings():
     action_option = request.form.get('action_option')
     config['action_option'] = action_option
 
-    already_watched = request.form.get('already_watched')
-    if already_watched.isdigit():  # Handling numbers for episodes to keep
-        config['already_watched'] = int(already_watched)
+    keep_watched = request.form.get('keep_watched')
+    if keep_watched.isdigit():  # Handling numbers for episodes to keep
+        config['keep_watched'] = int(keep_watched)
     else:
-        config['already_watched'] = already_watched
+        config['keep_watched'] = keep_watched
 
     always_keep = request.form.get('always_keep', '').split(',')
     config['always_keep'] = [normalize_name(name.strip()) for name in always_keep if name.strip()]  # Normalize and save
 
-    
+     # Add the monitor_watched setting
+    monitor_watched = request.form.get('monitor_watched', 'false').lower() == 'true'
+    config['monitor_watched'] = monitor_watched
 
     save_config(config)  # Save the updated configuration
 
