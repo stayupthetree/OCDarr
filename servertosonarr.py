@@ -25,11 +25,11 @@ LOG_PATH = os.getenv('LOG_PATH', '/app/logs/app.log')
 
 
 # Set operation-specific settings from config file
-GET_OPTION = config['get_option']
-ACTION_OPTION = config['action_option']
-ALREADY_WATCHED = config['already_watched']
-
-ALWAYS_KEEP = config['always_keep'] 
+get_option = config['get_option']
+action_option = config['action_option']
+keep_watched = config['keep_watched']
+always_keep = config['always_keep']
+monitor_watched = config['monitor_watched']
 
 # Setup logging
 logging.basicConfig(filename=LOG_PATH, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -125,7 +125,7 @@ def unmonitor_episodes(episode_ids):
         logging.error(f"Failed to unmonitor episodes. Response: {response.text}")
 
 def find_episodes_to_delete(episode_details, current_episode_number):
-    """Find episodes before the current episode to potentially delete, checking against 'always_keep'."""
+    """Find episodes before the current episode to potentially delete, checking against 'ALWAYS_KEEP'."""
     episodes_to_delete = []
     for ep in episode_details:
         if ep['episodeNumber'] < current_episode_number and ep['seriesTitle'] not in ALWAYS_KEEP:
@@ -143,16 +143,16 @@ def delete_episodes_in_sonarr(episode_file_ids):
             logging.info(f"Successfully deleted episode file with ID: {episode_file_id}")
         else:
             logging.error(f"Failed to delete episode file. Response: {response.text}")
-def determine_keep_ids(current_episodes, episode_number, already_watched, always_keep):
-    # Keep the most recent episodes as specified by 'already_watched'
-    if isinstance(already_watched, int):
-        keep_ids = [ep['id'] for ep in sorted(current_episodes, key=lambda x: -x['episodeNumber'])[:already_watched]]
+def determine_keep_ids(current_episodes, episode_number, KEEP_WATCHED, ALWAYS_KEEP):
+    # Keep the most recent episodes as specified by 'KEEP_WATCHED'
+    if isinstance(KEEP_WATCHED, int):
+        keep_ids = [ep['id'] for ep in sorted(current_episodes, key=lambda x: -x['episodeNumber'])[:KEEP_WATCHED]]
     else:
-        # Keep all episodes in the current season if 'already_watched' is set to 'season'
+        # Keep all episodes in the current season if 'KEEP_WATCHED' is set to 'season'
         keep_ids = [ep['id'] for ep in current_episodes]
 
-    # Ensure episodes with titles in 'always_keep' are not deleted
-    keep_ids.extend(ep['id'] for ep in current_episodes if ep['seriesTitle'] in always_keep and ep['id'] not in keep_ids)
+    # Ensure episodes with titles in 'ALWAYS_KEEP' are not deleted
+    keep_ids.extend(ep['id'] for ep in current_episodes if ep['seriesTitle'] in ALWAYS_KEEP and ep['id'] not in keep_ids)
     return list(set(keep_ids))  # Remove duplicates and return the list
 
 def main():
@@ -162,18 +162,21 @@ def main():
         if series_id:
             current_season_episodes = get_episode_details(series_id, season_number)
             if current_season_episodes:
-                # Unmonitor all episodes watched up to the current one
+               # Unmonitor all episodes watched up to the current one
                 unmonitor_ids = [ep['id'] for ep in current_season_episodes if ep['episodeNumber'] <= episode_number]
                 logging.debug(f"IDs to unmonitor: {unmonitor_ids}")  # Debugging statement
-                unmonitor_episodes(unmonitor_ids)  # Unmonitor episodes based on the IDs
+
+                # Unmonitor episodes based on the IDs only if monitor_watched is False
+                if not config['monitor_watched']:
+                    unmonitor_episodes(unmonitor_ids)
 
                 # Handling deletions based on configuration
-                keep_ids = determine_keep_ids(current_season_episodes, episode_number, config['already_watched'], config['always_keep'])
+                keep_ids = determine_keep_ids(current_season_episodes, episode_number, config['KEEP_WATCHED'], config['ALWAYS_KEEP'])
                 episodes_to_delete = find_episodes_to_delete(current_season_episodes, episode_number)
                 episodes_to_delete = [ep for ep in episodes_to_delete if ep['id'] not in keep_ids]
                 delete_episodes_in_sonarr(episodes_to_delete)
 
-                # Handling future episodes: monitor and potentially search based on ACTION_OPTION
+                # Handling future episodes: monitor and potentially search based on action_option
                 remaining_current_season = [ep for ep in current_season_episodes if ep['episodeNumber'] > episode_number]
                 episodes_needed = config['get_option'] - len(remaining_current_season)
                 next_episode_ids = [ep['id'] for ep in remaining_current_season][:config['get_option']]
