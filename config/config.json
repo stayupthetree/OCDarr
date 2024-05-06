@@ -1,6 +1,7 @@
 {
     "get_option": 1,
     "action_option": "search",
-    "already_watched": 1,
+    "keep_watched": 1,
+    "monitor_watched": false,
     "always_keep": []
 }
