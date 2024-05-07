@@ -54,8 +54,16 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="already_watched">How many episodes to keep?:</label>
-                <input type="text" id="already_watched" name="already_watched" placeholder="Enter 'Season' or number" value="{{ config.get('already_watched', 'Season') }}">
+                <label for="keep_watched">How many episodes to keep?:</label>
+                <input type="text" id="keep_watched" name="keep_watched" placeholder="Enter 'Season' or number" value="{{ config.get('already_watched', 'Season') }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="monitor_watched">Keep monitored if watched:</label>
+                <select id="monitor_watched" name="monitor_watched">
+                    <option value="true" {{ 'selected' if config.get('action_option') == 'true' else '' }}>true</option>
+                    <option value="false" {{ 'selected' if config.get('action_option') == 'false' else '' }}>false</option>/option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="always_keep">Shows to Always Keep (comma-separated):</label>
