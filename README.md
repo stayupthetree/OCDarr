@@ -97,6 +97,26 @@ json data exactly like:
 
 }
 ```
+### Docker hub https://hub.docker.com/r/vansmak/ocdarr
+
+Docker Instructions
+
+   Pull the Docker Image
+```
+    docker pull vansmak/ocdarr:latest
+```
+   Set Environment Variables or
+
+  Create an .env file with the required environment variables:
+```
+    SONARR_URL=http://sonarr.example.com
+    SONARR_API_KEY=your_sonarr_api_key
+```
+  Run the Docker Container
+```
+    docker run -d --env-file=.env -p 5001:5001 vansmak/ocdarr:latest
+```
+
 
 Modify config.json to fine-tune behavior locally at /config/config.json or http://dockerurl:port  settings.
 
