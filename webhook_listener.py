@@ -12,6 +12,10 @@ app = Flask(__name__)
 # Load environment variables from .env file
 load_dotenv()
 
+# Load environment variables
+SONARR_URL = os.getenv('SONARR_URL')
+
+
 # Setup logging to capture all logs
 logging.basicConfig(filename=os.getenv('LOG_PATH', '/app/logs/app.log'), 
                     level=logging.DEBUG if os.getenv('FLASK_DEBUG', 'false').lower() == 'true' else logging.INFO,
@@ -50,19 +54,30 @@ def save_config(config):
     with open(config_path, 'w') as file:
         json.dump(config, file, indent=4)
 
+def get_missing_log_content():
+    try:
+        with open(MISSING_LOG_PATH, 'r') as file:
+            return file.read()
+    except FileNotFoundError:
+        return "No missing entries logged."
+
+
 @app.route('/')
 def home():
     config = load_config()
     preferences = sonarr_utils.load_preferences()
     current_series = sonarr_utils.fetch_series_and_episodes(preferences)
     upcoming_premieres = sonarr_utils.fetch_upcoming_premieres(preferences)
-    return render_template('index.html', config=config, current_series=current_series, upcoming_premieres=upcoming_premieres)
+    return render_template('index.html', config=config, current_series=current_series, upcoming_premieres=upcoming_premieres,sonarr_url=SONARR_URL)
 
 @app.route('/settings')
 def settings():
     config = load_config()
+    missing_log_content = get_missing_log_content()
     message = request.args.get('message', '')
-    return render_template('settings.html', config=config, message=message)
+    # Use the index template, ensure the settings section is shown
+    return render_template('index.html', config=config, message=message, missing_log=missing_log_content, sonarr_url=SONARR_URL, show_settings=True)
+
 
 @app.route('/update-settings', methods=['POST'])
 def update_settings():

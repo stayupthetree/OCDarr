@@ -1,7 +1,7 @@
 {
     "get_option": 1,
-    "action_option": "search",
-    "keep_watched": 2,
-    "monitor_watched": false,
+    "action_option": "monitor",
+    "keep_watched": "Season",
+    "monitor_watched": true,
     "always_keep": []
 }
