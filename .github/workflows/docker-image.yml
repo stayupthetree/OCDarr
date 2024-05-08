@@ -32,12 +32,8 @@ jobs:
         context: .
         file: Dockerfile
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/myapp:${{ github.ref_name }}-${{ github.sha }}
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/myapp:${{ github.ref_name }}-${{ github.sha }}
+          ${{ github.ref == 'refs/heads/main' && 'ghcr.io/${{ github.repository_owner }}/myapp:latest' }}
         build-args: VERSION=${{ github.ref_name }}
         platforms: linux/amd64,linux/arm64,linux/arm/v7
-
-    - name: Tag "latest"
-      if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag ghcr.io/${{ github.repository_owner }}/myapp:${{ github.ref_name }}-${{ github.sha }} ghcr.io/${{ github.repository_owner }}/myapp:latest
-        docker push ghcr.io/${{ github.repository_owner }}/myapp:latest
