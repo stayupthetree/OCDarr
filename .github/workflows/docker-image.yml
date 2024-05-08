@@ -10,6 +10,13 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+          - linux/arm/v7
+
     steps:
     - uses: actions/checkout@v4
 
@@ -32,13 +39,15 @@ jobs:
         context: .
         file: Dockerfile
         push: true
-        tags: |
-          ghcr.io/${{ github.repository_owner }}/ocdarr:${{ github.ref_name }}-${{ github.sha }}
-        build-args: VERSION=${{ github.ref_name }}
-        platforms: linux/amd64,linux/arm64,linux/arm/v7
+        tags: ghcr.io/${{ github.repository_owner }}/ocdarr:${{ github.ref_name }}-${{ github.run_number }}-${{ matrix.platform }}
+        platforms: ${{ matrix.platform }}
 
-    - name: Tag "latest"
+    - name: Tag and push "latest"
       if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag ghcr.io/${{ github.repository_owner }}/ocdarr:${{ github.ref_name }}-${{ github.sha }} ghcr.io/${{ github.repository_owner }}/ocdarr:latest
-        docker push ghcr.io/${{ github.repository_owner }}/ocdarr:latest
+      uses: docker/build-push-action@v3
+      with:
+        context: .
+        file: Dockerfile
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/ocdarr:latest
+        platforms: ${{ matrix.platform }}
