@@ -21,13 +21,13 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
 
     - name: Log in to DockerHub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -39,15 +39,11 @@ jobs:
         context: .
         file: Dockerfile
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/ocdarr:${{ github.ref_name }}-${{ github.run_number }}-${{ matrix.platform }}
+        tags: ghcr.io/${{ github.repository_owner }}/ocdarr:${{ github.sha }}-${{ matrix.platform }}
         platforms: ${{ matrix.platform }}
 
     - name: Tag and push "latest"
       if: github.ref == 'refs/heads/main'
-      uses: docker/build-push-action@v3
-      with:
-        context: .
-        file: Dockerfile
-        push: true
-        tags: ghcr.io/${{ github.repository_owner }}/ocdarr:latest
-        platforms: ${{ matrix.platform }}
+      run: |
+        docker tag ghcr.io/${{ github.repository_owner }}/ocdarr:${{ github.sha }}-${{ matrix.platform }} ghcr.io/${{ github.repository_owner }}/ocdarr:latest
+        docker push ghcr.io/${{ github.repository_owner }}/ocdarr:latest
