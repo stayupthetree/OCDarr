@@ -23,8 +23,8 @@ jobs:
     - name: Build the Docker image
       run: |
         echo "IMAGE_TAG=$(date +%s)" >> $GITHUB_ENV
-        docker build . --file Dockerfile --tag ghcr.io/${{ github.repository_owner }}/my-image-name:${{ env.IMAGE_TAG }}
+        docker build . --file Dockerfile --tag ghcr.io/stayupthetree/OCDarr:${{ env.IMAGE_TAG }}
 
     - name: Push the Docker image to GitHub Container Registry
       run: |
-        docker push ghcr.io/${{ github.repository_owner }}/my-image-name:${{ env.IMAGE_TAG }}
+        docker push ghcr.io/stayupthetree/OCDarr:${{ env.IMAGE_TAG }}
